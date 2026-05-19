@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JEURYS HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#080c10;--bg2:#0d1117;--bg3:#161b22;--bg4:#1c2128;--border:#21262d;--border2:#30363d;--text:#e6edf3;--muted:#7d8590;--green:#3fb950;--green-dim:#1a3a2a;--blue:#79c0ff;--blue-dim:#0d2137;--purple:#d2a8ff;--purple-dim:#1e1333;--amber:#ffa657;--amber-dim:#2a1800;--cyan:#38bdf8;--cyan-dim:#041c2c;--red:#f85149;--red-dim:#3a1010;--pink:#f778ba;--pink-dim:#2a0f1e;--font-mono:'Share Tech Mono',monospace;--font:'Barlow',sans-serif;--font-cond:'Barlow Condensed',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;width:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-y:auto}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:1000}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px;width:100%}
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.header-left{display:flex;align-items:center;gap:14px}
+.logo{width:44px;height:44px;border:1.5px solid var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.title{font-family:var(--font-cond);font-size:28px;font-weight:700;letter-spacing:0.12em;color:var(--text);line-height:1}
+.subtitle{font-family:var(--font-mono);font-size:11px;color:var(--green);margin-top:4px;letter-spacing:0.05em}
+.header-right{text-align:right}
+.date-display{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+.status-pill{display:inline-flex;align-items:center;gap:5px;background:var(--green-dim);border:0.5px solid var(--green);color:var(--green);font-size:11px;font-family:var(--font-mono);padding:3px 10px;border-radius:20px;margin-top:5px}
+.status-pill::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;padding:12px 14px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.stat.green::after{background:var(--green)}.stat.blue::after{background:var(--blue)}.stat.purple::after{background:var(--purple)}.stat.amber::after{background:var(--amber)}
+.stat-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px}
+.stat-val{font-family:var(--font-cond);font-size:26px;font-weight:700;line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.chart-card{background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;padding:14px 16px}
+.chart-inner{position:relative;width:100%;height:140px}
+.chart-legend{display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+.legend-swatch{width:10px;height:3px;border-radius:2px;flex-shrink:0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.card{background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;padding:14px 16px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em}
+.card-tag{font-size:10px;font-family:var(--font-mono);padding:2px 8px;border-radius:10px}
+.habit-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.habit-row:last-child{margin-bottom:0}
+.habit-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.habit-info{flex:1;min-width:0}
+.habit-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px}
+.bar-track{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.bar-fill{height:5px;border-radius:3px;transition:width 1s ease}
+.habit-meta{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.habit-pct{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+.streak-badge{font-family:var(--font-mono);font-size:10px;padding:1px 7px;border-radius:10px}
+.proj-row{margin-bottom:13px}.proj-row:last-child{margin-bottom:0}
+.proj-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.proj-name{font-size:12px;font-weight:500;color:var(--text)}
+.proj-pct{font-family:var(--font-mono);font-size:11px}
+.proj-bar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.proj-fill{height:6px;border-radius:3px;transition:width 1.2s ease}
+.proj-next{font-size:11px;color:var(--muted);margin-top:4px}
+.quest-card{background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.quest-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:0.5px solid var(--border)}
+.quest-row:last-child{border-bottom:none;padding-bottom:0}
+.q-company{font-size:13px;font-weight:600;color:var(--text);width:130px;flex-shrink:0;font-family:var(--font-cond);letter-spacing:0.02em}
+.q-role{font-size:11px;color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q-badges{display:flex;gap:4px;flex-shrink:0}
+.badge{font-size:10px;font-family:var(--font-mono);padding:2px 7px;border-radius:10px;white-space:nowrap}
+.q-ats{font-family:var(--font-mono);font-size:11px;width:34px;text-align:right;flex-shrink:0}
+.workout-zone{background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;padding:20px 16px;margin-bottom:14px;text-align:center}
+.workout-ready{font-family:var(--font-mono);font-size:11px;color:var(--amber);letter-spacing:0.1em;margin-bottom:8px}
+.workout-title{font-family:var(--font-cond);font-size:18px;font-weight:700;color:var(--muted);letter-spacing:0.05em;margin-bottom:6px}
+.workout-sub{font-size:12px;color:var(--muted);opacity:0.7}
+.workout-slots{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:16px}
+.day-slot{background:var(--bg4);border:0.5px solid var(--border);border-radius:6px;padding:8px 4px;text-align:center}
+.day-label{font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em}
+.day-empty{font-size:18px;margin-top:4px;opacity:0.2}
+.ach-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.ach-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;border:0.5px solid var(--border)}
+.ach-item.done{background:var(--green-dim);border-color:rgba(63,185,80,0.3)}
+.ach-item.locked{opacity:0.4}
+.ach-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ach-text{font-size:11px}
+.ach-item.done .ach-text{color:var(--green)}
+.ach-item.locked .ach-text{color:var(--muted)}
+.loading{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;color:var(--green);padding:8px 0}
+.loading-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 1s infinite}
+.loading-dot:nth-child(2){animation-delay:0.2s}.loading-dot:nth-child(3){animation-delay:0.4s}
+@keyframes blink{0%,100%{opacity:0.2}50%{opacity:1}}
+.embed-note{background:var(--blue-dim);border:0.5px solid rgba(121,192,255,0.3);border-radius:8px;padding:10px 14px;margin-bottom:14px}
+.embed-note-text{font-size:12px;color:var(--blue);line-height:1.6}
+.embed-note-text strong{font-weight:600}
+.divider{display:flex;align-items:center;gap:10px;margin:16px 0 12px}
+.divider-line{flex:1;height:0.5px;background:var(--border)}
+.divider-label{font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap}
+@media(max-width:640px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .two-col,.chart-row{grid-template-columns:1fr}
+  .ach-grid{grid-template-columns:1fr}
+  .workout-slots{grid-template-columns:repeat(4,1fr)}
+  .q-role{display:none}
+  .title{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">🎮</div>
+    <div>
+      <div class="title">JEURYS HQ</div>
+      <div class="subtitle">▸ MISSION CONTROL ACTIVE</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="date-display" id="dateDisplay"></div>
+    <div><span class="status-pill">CAMPAIGN LIVE</span></div>
+  </div>
+</div>
+
+<div class="embed-note">
+  <div class="embed-note-text">⚡ <strong>Embed in Notion:</strong> Upload this file to <strong>tiiny.host</strong> → copy the URL → open your Notion HQ page → type <code>/embed</code> → paste URL → Enter. Done.</div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat green"><div class="stat-label">Applications</div><div class="stat-val" style="color:var(--green)" id="statApps">0</div><div class="stat-sub">Target: 8 / week</div></div>
+  <div class="stat blue"><div class="stat-label">Interviews</div><div class="stat-val" style="color:var(--blue)" id="statInterviews">0</div><div class="stat-sub" id="statConversion">Conversion: —</div></div>
+  <div class="stat purple"><div class="stat-label">Habit streak</div><div class="stat-val" style="color:var(--purple)" id="statStreak">0 days</div><div class="stat-sub">Best streak</div></div>
+  <div class="stat amber"><div class="stat-label">Weekly habits</div><div class="stat-val" style="color:var(--amber)" id="statHabits">0 / 42</div><div class="stat-sub" id="statHabitPct">0% complete</div></div>
+</div>
+
+<div class="chart-row">
+  <div class="chart-card">
+    <div class="card-header" style="margin-bottom:8px">
+      <span class="card-title">Habit completion — 14 days</span>
+      <span class="card-tag" style="background:var(--green-dim);color:var(--green)">HABITS</span>
+    </div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-swatch" style="background:#3fb950"></span>Daily habits done</span>
+    </div>
+    <div class="chart-inner"><canvas id="habitChart" role="img" aria-label="Habit completion over 14 days">Habit completion data.</canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header" style="margin-bottom:8px">
+      <span class="card-title">Job progress — 14 days</span>
+      <span class="card-tag" style="background:var(--blue-dim);color:var(--blue)">CAREER</span>
+    </div>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-swatch" style="background:#79c0ff"></span>Applications</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:#ffa657;border-top:2px dashed #ffa657;height:0"></span>Interviews</span>
+    </div>
+    <div class="chart-inner"><canvas id="jobChart" role="img" aria-label="Applications and interviews over 14 days">Job progress data.</canvas></div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Habit tracker — this week</span>
+      <span class="card-tag" style="background:var(--green-dim);color:var(--green)" id="habitWeekPct">0%</span>
+    </div>
+    <div id="habitList"><div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div><span>Loading habits...</span></div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Project progress</span></div>
+    <div id="projectList"><div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div><span>Loading projects...</span></div></div>
+    <div style="border-top:0.5px solid var(--border);margin-top:14px;padding-top:12px">
+      <div class="card-header" style="margin-bottom:10px"><span class="card-title">Achievements</span></div>
+      <div class="ach-grid">
+        <div class="ach-item done"><div class="ach-dot" style="background:var(--green)"></div><span class="ach-text">Resume ATS-ready</span></div>
+        <div class="ach-item done"><div class="ach-dot" style="background:var(--green)"></div><span class="ach-text">Notion HQ built</span></div>
+        <div class="ach-item locked"><div class="ach-dot" style="background:var(--muted)"></div><span class="ach-text">First interview</span></div>
+        <div class="ach-item locked"><div class="ach-dot" style="background:var(--muted)"></div><span class="ach-text">7-day streak</span></div>
+        <div class="ach-item locked"><div class="ach-dot" style="background:var(--muted)"></div><span class="ach-text">Offer $100K+</span></div>
+        <div class="ach-item locked"><div class="ach-dot" style="background:var(--muted)"></div><span class="ach-text">30-day streak</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="quest-card">
+  <div class="card-header">
+    <span class="card-title">Job quest log — active targets</span>
+    <span class="card-tag" style="background:var(--blue-dim);color:var(--blue)" id="questCount">Loading...</span>
+  </div>
+  <div id="questList"><div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div><span>Fetching from Notion...</span></div></div>
+</div>
+
+<div class="divider"><div class="divider-line"></div><div class="divider-label">Workout Zone</div><div class="divider-line"></div></div>
+<div class="workout-zone">
+  <div class="workout-ready">▸ ZONE READY — AWAITING ACTIVATION</div>
+  <div class="workout-title">WORKOUT PLAN</div>
+  <div class="workout-sub">Tell Claude your workout split and this zone will be populated with your full program — exercises, sets, reps, and PR tracking.</div>
+  <div class="workout-slots">
+    <div class="day-slot"><div class="day-label">Mon</div><div class="day-empty">+</div></div>
+    <div class="day-slot"><div class="day-label">Tue</div><div class="day-empty">+</div></div>
+    <div class="day-slot"><div class="day-label">Wed</div><div class="day-empty">+</div></div>
+    <div class="day-slot"><div class="day-label">Thu</div><div class="day-empty">+</div></div>
+    <div class="day-slot"><div class="day-label">Fri</div><div class="day-empty">+</div></div>
+    <div class="day-slot"><div class="day-label">Sat</div><div class="day-empty">+</div></div>
+    <div class="day-slot"><div class="day-label">Sun</div><div class="day-empty">+</div></div>
+  </div>
+</div>
+
+</div>
+<script>
+const HABIT_COLORS={
+  'Reading':    {color:'#79c0ff',bg:'#0d2137',icon:'📖'},
+  'Workout':    {color:'#3fb950',bg:'#1a3a2a',icon:'🏋️'},
+  'Drink Water':{color:'#38bdf8',bg:'#041c2c',icon:'💧'},
+  'Supplement': {color:'#d2a8ff',bg:'#1e1333',icon:'💊'},
+  'Pray':       {color:'#ffa657',bg:'#2a1800',icon:'🙏'},
+  'Learn':      {color:'#f778ba',bg:'#2a0f1e',icon:'💻'}
+};
+const SECTOR_COLORS={SaaS:{bg:'#0d2137',color:'#79c0ff'},Cybersecurity:{bg:'#3a1010',color:'#f85149'},Fintech:{bg:'#041c2c',color:'#38bdf8'},'HR Tech':{bg:'#1a3a2a',color:'#3fb950'},'Other Tech':{bg:'#1c2128',color:'#7d8590'}};
+const STATUS_COLORS={'🎯 To Apply':{bg:'#1c2128',color:'#7d8590'},'📤 Applied':{bg:'#0d2137',color:'#79c0ff'},'📞 Phone Screen':{bg:'#2a2000',color:'#ffa657'},'🔥 Interview':{bg:'#2a1800',color:'#ffa657'},'🤝 Final Round':{bg:'#1e1333',color:'#d2a8ff'},'✅ Offer':{bg:'#1a3a2a',color:'#3fb950'},'❌ Rejected':{bg:'#3a1010',color:'#f85149'},'👻 Ghosted':{bg:'#1c2128',color:'#7d8590'}};
+const PROJECT_COLORS=['#3fb950','#ffa657','#d2a8ff','#79c0ff','#38bdf8'];
+
+document.getElementById('dateDisplay').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+function buildLabels(){const l=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);l.push(d.toLocaleDateString('en-US',{month:'short',day:'numeric'}));}return l;}
+const chartLabels=buildLabels();
+const zero=new Array(14).fill(0);
+
+const baseScales={
+  x:{ticks:{color:'#7d8590',font:{family:"'Share Tech Mono',monospace",size:9},maxRotation:45,autoSkip:true,maxTicksLimit:7},grid:{color:'rgba(33,38,45,0.8)'},border:{color:'#21262d'}},
+  y:{min:0,ticks:{color:'#7d8590',font:{family:"'Share Tech Mono',monospace",size:9},stepSize:1},grid:{color:'rgba(33,38,45,0.8)'},border:{color:'#21262d'}}
+};
+
+const habitChart=new Chart(document.getElementById('habitChart'),{
+  type:'line',
+  data:{labels:chartLabels,datasets:[{label:'Habits done',data:[...zero],borderColor:'#3fb950',backgroundColor:'rgba(63,185,80,0.07)',borderWidth:2,pointBackgroundColor:'#3fb950',pointBorderColor:'#080c10',pointBorderWidth:2,pointRadius:3,fill:true,tension:0.4}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#161b22',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#7d8590',callbacks:{label:ctx=>` ${ctx.parsed.y} of 6 habits`}}},scales:{...baseScales,y:{...baseScales.y,max:6}}}
+});
+
+const jobChart=new Chart(document.getElementById('jobChart'),{
+  type:'line',
+  data:{labels:chartLabels,datasets:[
+    {label:'Applications',data:[...zero],borderColor:'#79c0ff',backgroundColor:'rgba(121,192,255,0.07)',borderWidth:2,pointBackgroundColor:'#79c0ff',pointBorderColor:'#080c10',pointBorderWidth:2,pointRadius:3,fill:true,tension:0.4},
+    {label:'Interviews',data:[...zero],borderColor:'#ffa657',backgroundColor:'rgba(255,166,87,0.04)',borderWidth:2,pointBackgroundColor:'#ffa657',pointBorderColor:'#080c10',pointBorderWidth:2,pointRadius:3,borderDash:[4,3],fill:false,tension:0.4}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#161b22',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#7d8590'}},scales:{...baseScales,y:{...baseScales.y,max:10}}}
+});
+
+async function callClaude(prompt){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:'Return ONLY compact JSON. No markdown, no backticks, no explanation.',messages:[{role:'user',content:prompt}],mcp_servers:[{type:'url',url:'https://mcp.notion.com/mcp',name:'notion'}]})});
+  const d=await res.json();
+  const text=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+
+const DEMO_JOBS=[
+  {company:'Rippling',role:'Account Executive',sector:'SaaS',status:'🎯 To Apply',remote:'Remote',atsScore:88},
+  {company:'Wiz',role:'Mid-Market AE',sector:'Cybersecurity',status:'🎯 To Apply',remote:'Remote',atsScore:85},
+  {company:'Palo Alto Networks',role:'Named AE',sector:'Cybersecurity',status:'🎯 To Apply',remote:'Hybrid',atsScore:82},
+  {company:'HubSpot',role:'AE — Mid-Market',sector:'SaaS',status:'🎯 To Apply',remote:'Remote',atsScore:86},
+  {company:'Brex',role:'SMB Account Executive',sector:'Fintech',status:'🎯 To Apply',remote:'Remote',atsScore:80}
+];
+const DEMO_HABITS=[
+  {habit:'Reading',currentStreak:0,monday:false,tuesday:false,wednesday:false,thursday:false,friday:false,saturday:false,sunday:false},
+  {habit:'Workout',currentStreak:0,monday:false,tuesday:false,wednesday:false,thursday:false,friday:false,saturday:false,sunday:false},
+  {habit:'Drink Water',currentStreak:0,monday:false,tuesday:false,wednesday:false,thursday:false,friday:false,saturday:false,sunday:false},
+  {habit:'Supplement',currentStreak:0,monday:false,tuesday:false,wednesday:false,thursday:false,friday:false,saturday:false,sunday:false},
+  {habit:'Pray',currentStreak:0,monday:false,tuesday:false,wednesday:false,thursday:false,friday:false,saturday:false,sunday:false},
+  {habit:'Learn',currentStreak:0,monday:false,tuesday:false,wednesday:false,thursday:false,friday:false,saturday:false,sunday:false}
+];
+const DEMO_PROJECTS=[
+  {project:'💼 Job Search Campaign',progress:20,nextAction:'Tailor resume for Rippling and apply'},
+  {project:'🤖 Automation Tool',progress:10,nextAction:'Set up Teal account'},
+  {project:'🧠 Daily Habits System',progress:5,nextAction:'Maintain 7-day streak'},
+  {project:'💪 Fitness Plan',progress:5,nextAction:'Define workout split'}
+];
+
+function renderHabits(habits){
+  const days=['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+  document.getElementById('habitList').innerHTML=habits.map(h=>{
+    const cfg=HABIT_COLORS[h.habit]||{color:'#7d8590',bg:'#1c2128',icon:'⭐'};
+    const checked=days.filter(d=>h[d]).length;
+    const pct=Math.round((checked/7)*100);
+    return`<div class="habit-row"><div class="habit-icon" style="background:${cfg.bg}">${cfg.icon}</div><div class="habit-info"><div class="habit-name">${h.habit}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${cfg.color}"></div></div><div class="habit-meta"><span class="habit-pct">${checked} / 7 days</span><span class="streak-badge" style="background:${cfg.bg};color:${cfg.color}">${h.currentStreak||0} day streak</span></div></div></div>`;
+  }).join('');
+}
+
+function renderProjects(projects){
+  document.getElementById('projectList').innerHTML=projects.map((p,i)=>{
+    const color=PROJECT_COLORS[i%PROJECT_COLORS.length];
+    const pct=Math.round(p.progress||0);
+    return`<div class="proj-row"><div class="proj-top"><span class="proj-name">${p.project}</span><span class="proj-pct" style="color:${pct>0?color:'var(--muted)'}">${pct}%</span></div><div class="proj-bar"><div class="proj-fill" style="width:${pct}%;background:${color}"></div></div>${p.nextAction?`<div class="proj-next">▸ ${p.nextAction}</div>`:''}</div>`;
+  }).join('');
+}
+
+function renderJobs(jobs){
+  document.getElementById('questCount').textContent=`${jobs.length} targets`;
+  document.getElementById('questList').innerHTML=jobs.slice(0,8).map(j=>{
+    const sc=SECTOR_COLORS[j.sector]||{bg:'#1c2128',color:'#7d8590'};
+    const stc=STATUS_COLORS[j.status]||{bg:'#1c2128',color:'#7d8590'};
+    const rc=j.remote==='Remote'?{bg:'#1a3a2a',color:'#3fb950'}:j.remote==='Hybrid'?{bg:'#2a2000',color:'#ffa657'}:{bg:'#3a1010',color:'#f85149'};
+    const ats=j.atsScore?`<span class="q-ats" style="color:${j.atsScore>=80?'#3fb950':j.atsScore>=60?'#ffa657':'#f85149'}">${j.atsScore}%</span>`:`<span class="q-ats" style="color:var(--muted)">—</span>`;
+    const sl=(j.status||'—').replace(/^\S+\s/,'');
+    return`<div class="quest-row"><span class="q-company">${j.company||'—'}</span><span class="q-role">${j.role||'—'}</span><div class="q-badges"><span class="badge" style="background:${sc.bg};color:${sc.color}">${j.sector||'—'}</span><span class="badge" style="background:${rc.bg};color:${rc.color}">${j.remote||'—'}</span><span class="badge" style="background:${stc.bg};color:${stc.color}">${sl}</span></div>${ats}</div>`;
+  }).join('');
+}
+
+async function loadJobs(){
+  try{
+    const data=await callClaude(`Search Notion database "📋 Job Search Quest Log", return ALL entries as JSON array. Each: company, role, sector, status, remote, atsScore. ONLY JSON array.`);
+    const jobs=Array.isArray(data)?data:DEMO_JOBS;
+    const applied=jobs.filter(j=>j.status&&!j.status.includes('To Apply')).length;
+    const interviews=jobs.filter(j=>j.status&&(j.status.includes('Interview')||j.status.includes('Final')||j.status.includes('Offer'))).length;
+    document.getElementById('statApps').textContent=applied;
+    document.getElementById('statInterviews').textContent=interviews;
+    document.getElementById('statConversion').textContent=applied>0?`Conversion: ${Math.round((interviews/applied)*100)}%`:'Conversion: —';
+    const appD=[...zero]; appD[13]=applied;
+    const intD=[...zero]; intD[13]=interviews;
+    jobChart.data.datasets[0].data=appD;
+    jobChart.data.datasets[1].data=intD;
+    jobChart.options.scales.y.max=Math.max(applied+2,5);
+    jobChart.update();
+    renderJobs(jobs);
+  }catch(e){renderJobs(DEMO_JOBS);document.getElementById('questCount').textContent='5 targets';}
+}
+
+async function loadHabits(){
+  try{
+    const data=await callClaude(`Search Notion database "🧠 Habit Tracker", return ALL entries as JSON array. Each: habit, currentStreak (number), monday, tuesday, wednesday, thursday, friday, saturday, sunday (true/false). ONLY JSON array.`);
+    const habits=Array.isArray(data)?data:DEMO_HABITS;
+    const days=['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+    let total=0;
+    habits.forEach(h=>{days.forEach(d=>{if(h[d])total++;});});
+    const possible=habits.length*7;
+    const pct=possible>0?Math.round((total/possible)*100):0;
+    document.getElementById('habitWeekPct').textContent=`${pct}%`;
+    document.getElementById('statHabits').textContent=`${total} / ${possible}`;
+    document.getElementById('statHabitPct').textContent=`${pct}% complete`;
+    const maxStreak=habits.reduce((m,h)=>Math.max(m,h.currentStreak||0),0);
+    document.getElementById('statStreak').textContent=`${maxStreak} days`;
+    const todayIdx=new Date().getDay();
+    const dayKey=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][todayIdx];
+    const todayCount=habits.filter(h=>h[dayKey]).length;
+    const hd=[...zero]; hd[13]=todayCount;
+    habitChart.data.datasets[0].data=hd;
+    habitChart.update();
+    renderHabits(habits);
+  }catch(e){renderHabits(DEMO_HABITS);}
+}
+
+async function loadProjects(){
+  try{
+    const data=await callClaude(`Search Notion database "🚀 Projects", return ALL entries as JSON array. Each: project (name), status, progress (0-100), nextAction. ONLY JSON array.`);
+    renderProjects(Array.isArray(data)?data:DEMO_PROJECTS);
+  }catch(e){renderProjects(DEMO_PROJECTS);}
+}
+
+loadJobs();loadHabits();loadProjects();
+</script>
+</body>
+</html>
